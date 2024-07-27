@@ -47,21 +47,12 @@ public final class Morpheus extends JavaPlugin implements MorpheusAPI {
     }
 
     /**
-     * Gets the instance of the Morpheus plugin.
-     *
-     * @return The Morpheus plugin instance.
-     */
-    public static Morpheus getInstance() {
-        return instance;
-    }
-
-    /**
      * Gets the API instance for the Morpheus plugin.
      *
      * @return The MorpheusAPI instance.
      */
     public static MorpheusAPI getAPI() {
-        return getInstance();
+        return instance;
     }
 
     /**
