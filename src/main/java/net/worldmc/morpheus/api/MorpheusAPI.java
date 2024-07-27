@@ -1,11 +1,15 @@
 package net.worldmc.morpheus.api;
 
 import org.bukkit.entity.Player;
-import net.worldmc.morpheus.Morpheus.TitleDuration;
 
 public interface MorpheusAPI {
-    void sendGlobalMessage(String message);
-    void sendPlayerMessage(Player player, String message);
+    enum TitleDuration {
+        SHORT,
+        LONG
+    }
+
+    void sendGlobalMessage(String message, boolean usePrefix);
+    void sendPlayerMessage(Player player, String message, boolean usePrefix);
     void sendGlobalTitle(String title, String subtitle, TitleDuration duration);
     void sendPlayerTitle(Player player, String title, String subtitle, TitleDuration duration);
     void sendGlobalActionBar(String message);

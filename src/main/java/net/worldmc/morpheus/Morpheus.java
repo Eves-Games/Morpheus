@@ -1,7 +1,5 @@
 package net.worldmc.morpheus;
 
-import net.kyori.adventure.text.minimessage.tag.Tag;
-import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.title.Title;
 import net.worldmc.morpheus.api.MorpheusAPI;
 import org.bukkit.Bukkit;
@@ -16,16 +14,10 @@ import java.util.Map;
 
 public final class Morpheus extends JavaPlugin implements MorpheusAPI {
 
-    public enum TitleDuration {
-        SHORT,
-        LONG
-    }
-
     private static Morpheus instance;
     private String prefix;
+    private String textColor;
     private MiniMessage miniMessage;
-    private String primaryColor;
-    private String secondaryColor;
     private Map<TitleDuration, Title.Times> titleDurations;
 
     @Override
@@ -34,42 +26,12 @@ public final class Morpheus extends JavaPlugin implements MorpheusAPI {
         loadConfig();
     }
 
-    @Override
-    public void onDisable() {
-        // Plugin shutdown logic
-    }
-
-    public static Morpheus getInstance() {
-        return instance;
-    }
-
-    public static MorpheusAPI getAPI() {
-        return getInstance();
-    }
-
     private void loadConfig() {
         saveDefaultConfig();
         prefix = getConfig().getString("prefix", "<gray>[<b><gradient:#00AA00:#FFAA00>WorldMC</gradient></b>] ");
+        textColor = getConfig().getString("text-color", "<green>");
 
-        Map<String, String> colorTags = new HashMap<>();
-        primaryColor = getConfig().getString("colors.primary", "<green>");
-        secondaryColor = getConfig().getString("colors.secondary", "<blue>");
-        colorTags.put("secondary", getConfig().getString("colors.secondary", "<blue>"));
-        colorTags.put("accent", getConfig().getString("colors.accent", "<red>"));
-        colorTags.put("neutral", getConfig().getString("colors.neutral", "<dark_gray>"));
-
-        TagResolver colorResolver = TagResolver.builder()
-                .resolvers(colorTags.entrySet().stream()
-                        .map(entry -> TagResolver.resolver(entry.getKey(),
-                                Tag.inserting(MiniMessage.miniMessage().deserialize(entry.getValue()))))
-                        .toArray(TagResolver[]::new))
-                .build();
-
-        miniMessage = MiniMessage.builder()
-                .tags(TagResolver.builder()
-                        .resolver(colorResolver)
-                        .build())
-                .build();
+        miniMessage = MiniMessage.miniMessage();
 
         titleDurations = new HashMap<>();
         titleDurations.put(TitleDuration.LONG, Title.Times.times(
@@ -85,56 +47,85 @@ public final class Morpheus extends JavaPlugin implements MorpheusAPI {
     }
 
     /**
-     * Sends a global message to all online players.
-     * @param message The message to be sent
+     * Gets the instance of the Morpheus plugin.
+     *
+     * @return The Morpheus plugin instance.
      */
-    @Override
-    public void sendGlobalMessage(String message) {
-        Component parsedMessage = miniMessage.deserialize(prefix + primaryColor + message);
+    public static Morpheus getInstance() {
+        return instance;
+    }
 
-        Bukkit.getOnlinePlayers().forEach(player ->
-                player.sendMessage(parsedMessage));
+    /**
+     * Gets the API instance for the Morpheus plugin.
+     *
+     * @return The MorpheusAPI instance.
+     */
+    public static MorpheusAPI getAPI() {
+        return getInstance();
+    }
+
+    /**
+     * Processes a message by applying the prefix (if specified) and text color.
+     *
+     * @param message The message to process.
+     * @param usePrefix Whether to include the prefix in the processed message.
+     * @return A Component representing the processed message.
+     */
+    private Component processMessage(String message, boolean usePrefix) {
+        String processedMessage = usePrefix ? prefix + textColor + message : textColor + message;
+        return miniMessage.deserialize(processedMessage);
+    }
+
+    /**
+     * Sends a global message to all online players.
+     *
+     * @param message The message to send.
+     * @param usePrefix Whether to include the prefix in the message.
+     */
+    public void sendGlobalMessage(String message, boolean usePrefix) {
+        Component parsedMessage = processMessage(message, usePrefix);
+        Bukkit.getOnlinePlayers().forEach(player -> player.sendMessage(parsedMessage));
     }
 
     /**
      * Sends a message to a specific player.
-     * @param player The player to receive the message
-     * @param message The message to be sent
+     *
+     * @param player The player to send the message to.
+     * @param message The message to send.
+     * @param usePrefix Whether to include the prefix in the message.
      */
-    @Override
-    public void sendPlayerMessage(Player player, String message) {
-        Component parsedMessage = miniMessage.deserialize(prefix + primaryColor + message);
+    public void sendPlayerMessage(Player player, String message, boolean usePrefix) {
+        Component parsedMessage = processMessage(message, usePrefix);
         player.sendMessage(parsedMessage);
     }
 
     /**
-     * Sends a global title and subtitle to all online players with specified duration.
-     * @param title The title to be sent
-     * @param subtitle The subtitle to be sent
-     * @param duration The duration type (SHORT or LONG)
+     * Sends a global title and subtitle to all online players.
+     *
+     * @param title The title to display.
+     * @param subtitle The subtitle to display.
+     * @param duration The duration to display the title for.
      */
-    @Override
     public void sendGlobalTitle(String title, String subtitle, TitleDuration duration) {
-        Component parsedTitle = miniMessage.deserialize(primaryColor + title);
-        Component parsedSubtitle = miniMessage.deserialize(secondaryColor + subtitle);
+        Component parsedTitle = processMessage(title, false);
+        Component parsedSubtitle = processMessage(subtitle, false);
 
         Title titleObj = Title.title(parsedTitle, parsedSubtitle, titleDurations.get(duration));
 
-        Bukkit.getOnlinePlayers().forEach(player ->
-                player.showTitle(titleObj));
+        Bukkit.getOnlinePlayers().forEach(player -> player.showTitle(titleObj));
     }
 
     /**
-     * Sends a title and subtitle to a specific player with specified duration.
-     * @param player The player to receive the title
-     * @param title The title to be sent
-     * @param subtitle The subtitle to be sent
-     * @param duration The duration type (SHORT or LONG)
+     * Sends a title and subtitle to a specific player.
+     *
+     * @param player The player to send the title to.
+     * @param title The title to display.
+     * @param subtitle The subtitle to display.
+     * @param duration The duration to display the title for.
      */
-    @Override
     public void sendPlayerTitle(Player player, String title, String subtitle, TitleDuration duration) {
-        Component parsedTitle = miniMessage.deserialize(primaryColor + title);
-        Component parsedSubtitle = miniMessage.deserialize(secondaryColor + subtitle);
+        Component parsedTitle = processMessage(title, false);
+        Component parsedSubtitle = processMessage(subtitle, false);
 
         Title titleObj = Title.title(parsedTitle, parsedSubtitle, titleDurations.get(duration));
 
@@ -143,24 +134,22 @@ public final class Morpheus extends JavaPlugin implements MorpheusAPI {
 
     /**
      * Sends a global action bar message to all online players.
-     * @param message The message to be sent
+     *
+     * @param message The message to display in the action bar.
      */
-    @Override
     public void sendGlobalActionBar(String message) {
-        Component parsedMessage = miniMessage.deserialize(primaryColor + message);
-
-        Bukkit.getOnlinePlayers().forEach(player ->
-                player.sendActionBar(parsedMessage));
+        Component parsedMessage = processMessage(message, false);
+        Bukkit.getOnlinePlayers().forEach(player -> player.sendActionBar(parsedMessage));
     }
 
     /**
      * Sends an action bar message to a specific player.
-     * @param player The player to receive the message
-     * @param message The message to be sent
+     *
+     * @param player The player to send the action bar message to.
+     * @param message The message to display in the action bar.
      */
-    @Override
     public void sendPlayerActionBar(Player player, String message) {
-        Component parsedMessage = miniMessage.deserialize(primaryColor + message);
+        Component parsedMessage = processMessage(message, false);
         player.sendActionBar(parsedMessage);
     }
 }

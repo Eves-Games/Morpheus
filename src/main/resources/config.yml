@@ -1,10 +1,5 @@
 prefix: "<gray>[<b><gradient:#00AA00:#FFAA00>WorldMC</gradient></b>] "
-
-colors:
-  primary: "<green>"
-  secondary: "<blue>"
-  accent: "<light_purple>"
-  neutral: "<gray>"
+text-color: "<green>"
 
 title-durations:
   long:
