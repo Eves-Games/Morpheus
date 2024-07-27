@@ -1,0 +1,17 @@
+prefix: "<gray>[<b><gradient:#00AA00:#FFAA00>WorldMC</gradient></b>] "
+
+colors:
+  primary: "<green>"
+  secondary: "<blue>"
+  accent: "<light_purple>"
+  neutral: "<gray>"
+
+title-durations:
+  long:
+    fade-in: 20
+    stay: 100
+    fade-out: 20
+  short:
+    fade-in: 10
+    stay: 40
+    fade-out: 10

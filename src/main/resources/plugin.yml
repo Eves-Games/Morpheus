@@ -1,0 +1,4 @@
+name: Morpheus
+version: '${project.version}'
+main: net.worldmc.morpheus.Morpheus
+api-version: '1.21'
